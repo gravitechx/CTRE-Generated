@@ -38,5 +38,8 @@ public final class Constants {
         public static final Translation3d translationToRobot = new Translation3d(Units.inchesToMeters(10.48), Units.inchesToMeters(0.582), Units.inchesToMeters(4.691)); //TODO fill this out later
         public static final Rotation3d rotationOffset = new Rotation3d(180, 20, 0);
         public static final Translation3d tagToBranchOffset =  new Translation3d();
+
+        public static final Translation3d translationToRobot2 = new Translation3d(Units.inchesToMeters(13.720), Units.inchesToMeters(9.755794), Units.inchesToMeters(8.505)); //TODO fill this out later
+        public static final Rotation3d rotationOffset2 = new Rotation3d(0, 20, 0);
     }
 }

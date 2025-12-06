@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
@@ -22,7 +23,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.LimelightWrapper;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -33,6 +34,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+    private Boolean doRejectUpdate = false;
+    private Boolean doRejectUpdate2 = false;
+    private LimelightWrapper limelight = new LimelightWrapper("limelight-one", "limelight-greg");
+
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -234,6 +239,62 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 );
                 m_hasAppliedOperatorPerspective = true;
             });
+        }
+
+        doRejectUpdate = false;
+        if(limelight.getBotPoseEstimate().rawFiducials.length > 0)
+        {
+            if(limelight.getBotPoseEstimate().tagCount == 1 && limelight.getBotPoseEstimate().rawFiducials.length == 1)
+            {
+                if(limelight.getBotPoseEstimate().rawFiducials[0].ambiguity > .7)
+                {
+                doRejectUpdate = true;
+                }
+                if(limelight.getBotPoseEstimate().rawFiducials[0].distToCamera > 3)
+                {
+                doRejectUpdate = true;
+                }
+            }
+            if(limelight.getBotPoseEstimate().tagCount == 0)
+            {
+                doRejectUpdate = true;
+            }
+
+            if(!doRejectUpdate)
+            {
+                setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
+                addVisionMeasurement(
+                    limelight.getBotPoseEstimate().pose,
+                    limelight.getBotPoseEstimate().timestampSeconds);
+            }
+        }
+
+        doRejectUpdate2 = false;
+        if(limelight.getBotPoseEstimate2().rawFiducials.length > 0)
+        {
+            if(limelight.getBotPoseEstimate2().tagCount == 1 && limelight.getBotPoseEstimate2().rawFiducials.length == 1)
+            {
+                if(limelight.getBotPoseEstimate2().rawFiducials[0].ambiguity > .7)
+                {
+                    doRejectUpdate2 = true;
+                }
+                if(limelight.getBotPoseEstimate2().rawFiducials[0].distToCamera > 3)
+                {
+                    doRejectUpdate2 = true;
+                }
+            }
+            if(limelight.getBotPoseEstimate2().tagCount == 0)
+            {
+                doRejectUpdate2 = true;
+            }
+
+            if(!doRejectUpdate2)
+            {
+                setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
+                addVisionMeasurement(
+                    limelight.getBotPoseEstimate2().pose,
+                    limelight.getBotPoseEstimate2().timestampSeconds);
+            }
         }
     }
 
