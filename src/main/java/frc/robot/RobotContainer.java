@@ -13,12 +13,24 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.commands.ElevatorCommand;
+import frc.robot.commands.ElevatorCommandFun;
+import frc.robot.commands.IntakeSourceCMD;
+import frc.robot.commands.PositionArmCMD;
+import frc.robot.commands.WristCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Coral;
+import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.Pivot;
+import frc.robot.subsystems.Wrist;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -36,6 +48,12 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+    private boolean isCoralMode = true;
+    private Pivot pivot = new Pivot();
+    private Wrist wrist = new Wrist();
+    private Elevator elevator = new Elevator(pivot);
+    private Coral coral = new Coral();
 
     public RobotContainer() {
         configureBindings();
@@ -60,21 +78,147 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+        Trigger isCoralMode = new Trigger(() -> this.isCoralMode);
+        Trigger isAlgaeMode = isCoralMode.negate();
+
+        joystick.leftTrigger().and(isCoralMode).onTrue(new ParallelCommandGroup(
+            new WristCommand(wrist, Constants.WristConstants.horizontalAngle),
+            new ElevatorCommand(elevator, 1.5, -4, pivot),
+            new InstantCommand(() -> pivot.setMotor(Constants.PivotConstants.groundIntakeAngle-0.8)),
+            new InstantCommand(() -> Constants.armPOS = Constants.PivotConstants.groundIntakeAngle),
+            new InstantCommand(() -> coral.setMotor(.6))
         ));
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        joystick.leftTrigger().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.leftTrigger().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.rightTrigger().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.rightTrigger().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        joystick.leftTrigger().and(isCoralMode).onFalse(
+            new ParallelCommandGroup(
+                new ElevatorCommandFun(elevator, () -> elevator.kathunkVal()),
+                new InstantCommand(() -> pivot.kathunk(Constants.elevatorLevel))
+            )
 
-        // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        );
+        joystick.leftTrigger().and(isCoralMode).onFalse(new SequentialCommandGroup(
+            new WaitCommand(0.45), //go down, wait .5 seconds, go up
+            new InstantCommand(() -> pivot.setMotor(Constants.PivotConstants.idleAngle)),
+            // new ElevatorCommand(elevator, 0, -5, pivot),
+            // new InstantCommand(() -> elevator.resetEncoder(0.5)),
+            new WaitCommand(0.5)
+        )); 
+        joystick.leftTrigger().and(isCoralMode).onFalse(
+            new SequentialCommandGroup(
+            new WaitCommand(0.3),
+            new InstantCommand(() -> coral.setMotor(0.3)),
+            new WaitCommand(0.15),
+            new InstantCommand(() -> coral.setMotor(0)) //stop spinning motor after .5 seconds
+        ));
 
-        drivetrain.registerTelemetry(logger::telemeterize);
+        joystick.leftTrigger().and(isAlgaeMode).onTrue(
+            new ParallelCommandGroup(
+                    new InstantCommand(() -> pivot.setMotor(Constants.PivotConstants.groundIntakeAlgaeAngle-0.5)),
+                    new WristCommand(wrist, Constants.WristConstants.horizontalAngle),
+                    new ElevatorCommand(elevator, 0, 0, pivot),
+                    new InstantCommand(() -> coral.setMotor(0.5))
+                )
+        );
+
+        joystick.leftTrigger().and(isAlgaeMode).onFalse(
+            new ParallelCommandGroup(
+                    new InstantCommand(() -> pivot.setMotor(Constants.PivotConstants.idleAngle)),
+                    new WristCommand(wrist, Constants.WristConstants.horizontalAngle),
+                    new InstantCommand(() -> coral.setMotor(0.1))
+                )
+        );
+
+        joystick.a().and(isCoralMode).onTrue(
+            new PositionArmCMD(
+                elevator, Constants.ElevatorConstants.L1Height, pivot, Constants.PivotConstants.L1Angle, wrist, Constants.WristConstants.horizontalAngle
+            )
+        );
+        joystick.a().and(isAlgaeMode).onTrue(
+            new PositionArmCMD(
+                elevator, Constants.ElevatorConstants.L1Height, pivot, Constants.PivotConstants.processorAngle, wrist, Constants.WristConstants.horizontalAngle
+            )
+        );
+            
+
+        //L2 Coral Command
+        joystick.b().and(isCoralMode).onTrue(new ParallelCommandGroup(
+            new ElevatorCommand(elevator, Constants.ElevatorConstants.L2Height + 0.7, 2, pivot),
+            new InstantCommand( () -> pivot.setMotor(Constants.PivotConstants.L2startAngle-.3)),
+            new WristCommand(wrist, Constants.WristConstants.verticalAngle)
+        ));
+
+        //L2 Algae Command
+        joystick.b().and(isAlgaeMode).onTrue(new ParallelCommandGroup(
+            new ElevatorCommand(elevator, Constants.ElevatorConstants.L2AlgaeHeight, 2, pivot),
+            new InstantCommand( () -> pivot.setMotor(Constants.PivotConstants.L2L3AlgaeAngle)),
+            new WristCommand(wrist, Constants.WristConstants.verticalAngle),
+            new InstantCommand(() -> coral.setMotor(0.5))
+        ));
+
+        joystick.b().and(isAlgaeMode).onFalse(
+            new InstantCommand(() -> coral.setMotor(0.1))
+        );
+  
+        //L3 Coral Command
+        joystick.x().and(isCoralMode).onTrue(new ParallelCommandGroup(
+            new ElevatorCommand(elevator, Constants.ElevatorConstants.L3Height +0.7, 3, pivot),
+            new InstantCommand(() -> pivot.setMotor(Constants.PivotConstants.L3startAngle-.3)),
+            new WristCommand(wrist, Constants.WristConstants.verticalAngle)
+        ));
+
+        //L3 Algae Command
+        joystick.x().and(isAlgaeMode).onTrue(new ParallelCommandGroup(
+            new ElevatorCommand(elevator, Constants.ElevatorConstants.L3AlgaeHeight-.25, 3, pivot),
+            new InstantCommand(() -> pivot.setMotor(Constants.PivotConstants.L2L3AlgaeAngle)),
+            new WristCommand(wrist, Constants.WristConstants.verticalAngle),
+            new InstantCommand(() -> coral.setMotor(0.5))
+        ));
+
+        joystick.x().and(isAlgaeMode).onFalse(
+            new InstantCommand(() -> coral.setMotor(0.1))
+        );
+
+
+        //L4 Command
+        joystick.y().and(isCoralMode).onTrue(
+            new ParallelCommandGroup(
+            new WristCommand(wrist, Constants.WristConstants.verticalAngle),
+            new ElevatorCommand(elevator, Constants.ElevatorConstants.L4Height + 0.4, 4, pivot),
+            new InstantCommand(() -> pivot.setMotor(2.6+0.7)),
+            new SequentialCommandGroup(
+                new WaitCommand(1),
+                new InstantCommand(() -> Constants.armPOS = 1.7)
+            )));
+
+        joystick.y().and(isAlgaeMode).onTrue(
+            new ParallelCommandGroup(
+            new ElevatorCommand(elevator, Constants.ElevatorConstants.L4Height + 1.4, 0, pivot),
+            new WristCommand(wrist, Constants.WristConstants.verticalAngle),
+            new SequentialCommandGroup(
+                new WaitCommand(2),
+                new InstantCommand(() -> pivot.setMotor(Constants.PivotConstants.bargeStartAngle))
+            )
+        ));
+
+        joystick.rightTrigger().onTrue(new ParallelCommandGroup(
+            new ElevatorCommandFun(elevator, () -> elevator.kathunkVal()),
+            new InstantCommand(() -> pivot.kathunk(Constants.elevatorLevel))
+        ));
+
+        // joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        // joystick.b().whileTrue(drivetrain.applyRequest(() ->
+        //     point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+        // ));
+        // // Run SysId routines when holding back/start and X/Y.
+        // // Note that each routine should be run exactly once in a single log.
+        // joystick.leftTrigger().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        // joystick.leftTrigger().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // joystick.rightTrigger().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // joystick.rightTrigger().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+        // // reset the field-centric heading on left bumper press
+        // joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+        // drivetrain.registerTelemetry(logger::telemeterize);
     }
 
     public Command getAutonomousCommand() {

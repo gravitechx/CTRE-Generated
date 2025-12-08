@@ -12,7 +12,7 @@ import frc.robot.subsystems.Elevator;
 public class ElevatorCommandFun extends Command{
     //makes the PID
     //THIS SHOULD NOT BE USED DURING AN ACTUAL COMP. For stress testing/fun purposes only.
-    PIDController pid = new PIDController(Constants.ElevatorConstants.elevatorKP, Constants.ElevatorConstants.elevatorKI, 0);
+    PIDController pid = new PIDController(Constants.ElevatorConstants.elevatorKp, Constants.ElevatorConstants.elevatorKi, 0);
    
     private final Elevator elevator;
     //The double level is replaced with levelsup, a double supplier method which is called every scheduler run to get a continuous execute method for the level.

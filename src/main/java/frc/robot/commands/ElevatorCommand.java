@@ -10,7 +10,7 @@ import frc.robot.subsystems.Pivot;
 
 public class ElevatorCommand extends Command{
     //makes the PID
-    PIDController pid = new PIDController(Constants.ElevatorConstants.elevatorKP, Constants.ElevatorConstants.elevatorKI, 0);
+    PIDController pid = new PIDController(Constants.ElevatorConstants.elevatorKp, Constants.ElevatorConstants.elevatorKi, 0);
     
     private final Elevator elevator;
     private final Pivot pivot;

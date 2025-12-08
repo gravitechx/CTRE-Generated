@@ -58,13 +58,16 @@ public final class Constants {
     public static final class ElevatorConstants {
         public static final SparkMax ElevatorMotorPort1 = new SparkMax(4, MotorType.kBrushless);
         public static final SparkMax ElevatorMotorPort2 = new SparkMax(5, MotorType.kBrushless); //TODO change this
-        public static final double elevatorKP = 0.15; //proportional
-        public static final double elevatorKI = 0; //integral
-        public static final double elevatorKD = 0.8; //derivative
+        public static final double elevatorKp = 0.15; //proportional
+        public static final double elevatorKi = 0; //integral
+        public static final double elevatorKd = 0.8; //derivative
         public static final double PIDerrorTolerance = 0.2;//pid controller tolerance
         public static final double maxElevatorSpeed = 0.45;
-        public static final double maxElevatorDownSpeed = maxElevatorSpeed*.4
-        ;
+        public static final double maxElevatorDownSpeed = maxElevatorSpeed*.4;
+        public static final double elevatorkS = 0.0; // volts (V)
+        public static final double elevatorkG = 0.762; // volts (V)
+        public static final double elevatorkV = 0.762; // volt per velocity (V/(m/s))
+        public static final double elevatorkA = 0.0; // volt per acceleration (V/(m/s²))
         
         //Heights for the elevator
         //TODO: These need to be tuned to the correct heights. Also the order may be wrong
@@ -87,5 +90,19 @@ public final class Constants {
     public static final class CoralConstants {
         public static final double intakespeed = 0.3;
         public static final double outtakespeed = -0.35;
+    }
+
+    public static final class WristConstants {
+        public static final double wristKP = 0.4; //proportional
+        public static final double wristKI = 0.0; //integral
+        public static final double wristKD = 0.3; //derivative
+        public static final double PIDerrorTolerance = 0.1;//pid controller tolerance
+        public static final double maxWristSpeed = 0.1;
+        public static final double maxWristDownSpeed = .15;
+
+        public static final double horizontalAngle = -2.595; //TODO change this
+        public static final double upsideDownAngle = -4.809;
+        public static final double verticalAngle = -0.285;
+        public static final double wristAngle = 0;
     }
 }
