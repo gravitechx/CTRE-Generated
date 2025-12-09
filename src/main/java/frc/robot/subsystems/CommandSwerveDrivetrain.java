@@ -6,13 +6,21 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import edu.wpi.first.math.geometry.Twist2d;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,7 +30,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -40,6 +48,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
+    private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -126,6 +135,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configureAutoBuilder();
     }
 
     /**
@@ -150,6 +160,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configureAutoBuilder();
     }
 
     /**
@@ -182,6 +193,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        configureAutoBuilder();
     }
 
     /**
@@ -216,6 +228,39 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return m_sysIdRoutineToApply.dynamic(direction);
     }
 
+    public void configureAutoBuilder(){
+        RobotConfig config;
+        try{
+            config = RobotConfig.fromGUISettings();
+            AutoBuilder.configure(
+                () -> getState().Pose,   // Supplier of current robot pose
+                this::resetPose,         // Consumer for seeding pose against auto
+                () -> getState().Speeds, // Supplier of current robot speeds
+                // Consumer of ChassisSpeeds and feedforwards to drive the robot
+                (speeds, feedforwards) -> setControl(
+                    m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
+                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                ),
+
+                new PPHolonomicDriveController(
+                    new PIDConstants(10
+                    , 0.5, 1.3), 
+                    new PIDConstants(5)
+                ),
+                config,
+                () -> false,
+
+                this
+            );
+        } catch (Exception e) {
+            // Handle exception as needed
+            e.printStackTrace();
+        }
+        
+    }
+
+
     @Override
     public void periodic() {
         /*
@@ -245,13 +290,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             final double currentTime = Utils.getCurrentTimeSeconds();
             double deltaTime = currentTime - m_lastSimTime;
             m_lastSimTime = currentTime;
-
-            /* use the measured time delta, get battery voltage from WPILib */
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
-
     /**
      * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
      * while still accounting for measurement noise.
