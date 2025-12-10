@@ -31,7 +31,6 @@ import frc.robot.subsystems.Coral;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.PivotSubsystem;
 import frc.robot.subsystems.Wrist;
 
 public class RobotContainer {
@@ -53,8 +52,8 @@ public class RobotContainer {
 
     private boolean isCoralMode = true;
     private Pivot pivot = new Pivot();
-    private PivotSubsystem pivotSub = new PivotSubsystem();
-    private ElevatorSubsystem elevSub = new ElevatorSubsystem();
+    private ElevatorSubsystem elevSub 
+    = new ElevatorSubsystem();
     private Wrist wrist = new Wrist();
     private Elevator elevator = new Elevator(pivot);
     private Coral coral = new Coral();
@@ -85,12 +84,12 @@ public class RobotContainer {
         Trigger isCoralMode = new Trigger(() -> this.isCoralMode);
         Trigger isAlgaeMode = isCoralMode.negate();
 
-        joystick.a().whileTrue(pivotSub.setAngle(Degrees.of(-20)));
-        joystick.b().whileTrue(pivotSub.setAngle(Degrees.of(60)));
-        // Schedule `set` when the Xbox controller's B button is pressed,
-        // cancelling on release.
-        joystick.x().whileTrue(pivotSub.set(0.3));
-        joystick.y().whileTrue(pivotSub.set(-0.3));
+        // joystick.a().whileTrue(pivotSub.setAngle(Degrees.of(-20)));
+        // joystick.b().whileTrue(pivotSub.setAngle(Degrees.of(60)));
+        // // Schedule `set` when the Xbox controller's B button is pressed,
+        // // cancelling on release.
+        // joystick.x().whileTrue(pivotSub.set(0.3));
+        // joystick.y().whileTrue(pivotSub.set(-0.3));
 
         // Schedule `setHeight` when the Xbox controller's B button is pressed,
         // cancelling on release.

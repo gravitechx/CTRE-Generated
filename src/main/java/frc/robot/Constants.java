@@ -56,8 +56,8 @@ public final class Constants {
     }
 
     public static final class ElevatorConstants {
-        public static final SparkMax ElevatorMotorPort1 = new SparkMax(4, MotorType.kBrushless);
-        public static final SparkMax ElevatorMotorPort2 = new SparkMax(5, MotorType.kBrushless); //TODO change this
+        // public static final SparkMax ElevatorMotorPort1 = new SparkMax(4, MotorType.kBrushless);
+        // public static final SparkMax ElevatorMotorPort2 = new SparkMax(5, MotorType.kBrushless); //TODO change this
         public static final double elevatorKp = 0.15; //proportional
         public static final double elevatorKi = 0; //integral
         public static final double elevatorKd = 0.8; //derivative

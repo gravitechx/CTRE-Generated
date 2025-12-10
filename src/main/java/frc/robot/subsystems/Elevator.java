@@ -4,6 +4,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,8 +12,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase{
-    private final SparkMax motor = Constants.ElevatorConstants.ElevatorMotorPort1;
-    private final SparkMax motor2 = Constants.ElevatorConstants.ElevatorMotorPort2;
+    private final SparkMax motor = new SparkMax(13, MotorType.kBrushless);
+    private final SparkMax motor2 = new SparkMax(12, MotorType.kBrushless);
     private RelativeEncoder encoder = motor.getEncoder(); //used to be AbsoluteEncoder but these motors are relative. Should not affect performance.
     // private Boolean haveEncoder = !(encoder == null); //if there is not an encoder, it returns a null value
     //private Encoder newEncoder = new Encoder(0, 0);

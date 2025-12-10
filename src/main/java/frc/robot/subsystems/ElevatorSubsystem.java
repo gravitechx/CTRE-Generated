@@ -15,8 +15,11 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -38,16 +41,19 @@ import yams.motorcontrollers.local.SparkWrapper;
 
 public class ElevatorSubsystem extends SubsystemBase {
 
+    private SparkMax followMotor = new SparkMax(5, MotorType.kBrushless);
+
+
   private SmartMotorControllerConfig smcConfig = new SmartMotorControllerConfig(this)
     .withControlMode(ControlMode.CLOSED_LOOP)
     // Mechanism Circumference is the distance traveled by each mechanism rotation converting rotations to meters.
     .withMechanismCircumference(Meters.of(Inches.of(0.25).in(Meters) * 22))
     // Feedback Constants (PID Constants)
     .withClosedLoopController(4, 0, 0.1, MetersPerSecond.of(0.5), MetersPerSecondPerSecond.of(0.5))
-    .withSimClosedLoopController(250, 0, 0, MetersPerSecond.of(0.5), MetersPerSecondPerSecond.of(0.5))
+    .withSimClosedLoopController(150, 0, 0, MetersPerSecond.of(0.5), MetersPerSecondPerSecond.of(0.5))
     // Feedforward Constants
     .withFeedforward(new ElevatorFeedforward(0.1, 1.5, 2.5))
-    .withSimFeedforward(new ElevatorFeedforward(0.02, .2, 8.86))
+    .withSimFeedforward(new ElevatorFeedforward(0.02, .2, 20))
     // Telemetry name and verbosity level
     .withTelemetry("ElevatorMotor", TelemetryVerbosity.HIGH)
     // Gearing from the motor rotor to final shaft.
@@ -62,7 +68,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     .withOpenLoopRampRate(Seconds.of(0.25));
 
   // Vendor motor controller object
-  private SparkMax spark = new SparkMax(7, MotorType.kBrushless);
+  private SparkMax spark = new SparkMax(4, MotorType.kBrushless);
 
   // Create our SmartMotorController from our Spark and config with the NEO.
   private SmartMotorController sparkSmartMotorController = new SparkWrapper(spark, DCMotor.getNEO(2), smcConfig);
@@ -94,7 +100,14 @@ public class ElevatorSubsystem extends SubsystemBase {
   public Command sysId() { return elevator.sysId(Volts.of(7), Volts.of(2).per(Second), Seconds.of(4));}
 
   /** Creates a new ExampleSubsystem. */
-  public ElevatorSubsystem() {}
+  public ElevatorSubsystem() {
+    SparkMaxConfig motorConfig = new SparkMaxConfig();
+        motorConfig.openLoopRampRate(0.2);
+        motorConfig.closedLoopRampRate(0.2);
+        motorConfig.follow(spark);
+    followMotor.configure(motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
+  }
 
   /**
    * Example command factory method.
