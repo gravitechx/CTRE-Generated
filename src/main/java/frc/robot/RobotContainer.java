@@ -55,18 +55,18 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
-        SmartDashboard.putData("Auto Mode", autoChooser);
-        FollowPathCommand.warmupCommand().schedule();
-
-        configureBindings();
-
         vision =
         new Vision(
             drivetrain::addVisionMeasurement,
             new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drivetrain::getPose2d),
             new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drivetrain::getPose2d));
     
+    
+        autoChooser = AutoBuilder.buildAutoChooser("Tests");
+        SmartDashboard.putData("Auto Mode", autoChooser);
+        FollowPathCommand.warmupCommand().schedule();
+
+        configureBindings();
     
     }
 
