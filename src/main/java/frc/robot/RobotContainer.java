@@ -26,6 +26,12 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Pivot;
 
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOLimelight;
+import static frc.robot.subsystems.vision.VisionConstants.*;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(1.2).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -44,6 +50,8 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final Pivot pivot = new Pivot();
 
+    private final Vision vision;
+
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
@@ -52,6 +60,14 @@ public class RobotContainer {
         FollowPathCommand.warmupCommand().schedule();
 
         configureBindings();
+
+        vision =
+        new Vision(
+            drivetrain::addVisionMeasurement,
+            new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drivetrain::getPose2d),
+            new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drivetrain::getPose2d));
+    
+    
     }
 
     private void configureBindings() {
