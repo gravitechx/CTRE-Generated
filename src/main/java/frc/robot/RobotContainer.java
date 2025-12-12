@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -20,15 +21,15 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.ElevatorCommand;
-import frc.robot.commands.ElevatorCommandFun;
+// import frc.robot.commands.ElevatorCommand;
+// import frc.robot.commands.ElevatorCommandFun;
 import frc.robot.commands.IntakeSourceCMD;
-import frc.robot.commands.PositionArmCMD;
+// import frc.robot.commands.PositionArmCMD;
 import frc.robot.commands.WristCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Coral;
-import frc.robot.subsystems.Elevator;
+// import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Wrist;
@@ -55,7 +56,7 @@ public class RobotContainer {
     private ElevatorSubsystem elevSub 
     = new ElevatorSubsystem();
     private Wrist wrist = new Wrist();
-    private Elevator elevator = new Elevator(pivot);
+    // private Elevator elevator = new Elevator(pivot);
     private Coral coral = new Coral();
 
     public RobotContainer() {
@@ -91,14 +92,17 @@ public class RobotContainer {
         // joystick.x().whileTrue(pivotSub.set(0.3));
         // joystick.y().whileTrue(pivotSub.set(-0.3));
 
-        // Schedule `setHeight` when the Xbox controller's B button is pressed,
-        // cancelling on release.
-        joystick.povDown().whileTrue(elevSub.setHeight(Meters.of(0)));
-        joystick.povRight().whileTrue(elevSub.setHeight(Meters.of(1.5)));
+
+        // Schedule `setHeight` when/        ub.setHeight(Meters.of(Units.inchesToMeters(20))));
+        joystick.x().onTrue(elevSub.setHeight(Meters.of(Units.inchesToMeters(40))));
+        joystick.y().onTrue(elevSub.setHeight(Meters.of(Units.inchesToMeters(54))));
+
+        // joystick.leftTrigger().onTrue(elevSub.sysId());
         // Schedule `set` when the Xbox controller's B button is pressed,
         // cancelling on release.
-        joystick.povLeft().whileTrue(elevSub.set(0.3));
-        joystick.povUp().whileTrue(elevSub.set(-0.3));
+        joystick.povLeft().whileTrue(elevSub.set(0.1));
+
+        joystick.povUp().whileTrue(elevSub.set(-0.1));
 
         // joystick.leftTrigger().and(isCoralMode).onTrue(new ParallelCommandGroup(
         //     new WristCommand(wrist, Constants.WristConstants.horizontalAngle),
