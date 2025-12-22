@@ -15,12 +15,16 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.security.spec.EdECPoint;
+
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -38,60 +42,33 @@ import yams.motorcontrollers.local.SparkWrapper;
 
 public class ElevatorSubsystem extends SubsystemBase {
 
-  private SmartMotorControllerConfig smcConfig = new SmartMotorControllerConfig(this)
-    .withControlMode(ControlMode.CLOSED_LOOP)
-    // Mechanism Circumference is the distance traveled by each mechanism rotation converting rotations to meters.
-    .withMechanismCircumference(Meters.of(Inches.of(0.25).in(Meters) * 22))
-    // Feedback Constants (PID Constants)
-    .withClosedLoopController(4, 0, 0.1, MetersPerSecond.of(0.5), MetersPerSecondPerSecond.of(0.5))
-    .withSimClosedLoopController(250, 0, 0, MetersPerSecond.of(0.5), MetersPerSecondPerSecond.of(0.5))
-    // Feedforward Constants
-    .withFeedforward(new ElevatorFeedforward(0.1, 1.5, 2.5))
-    .withSimFeedforward(new ElevatorFeedforward(0.02, .2, 8.86))
-    // Telemetry name and verbosity level
-    .withTelemetry("ElevatorMotor", TelemetryVerbosity.HIGH)
-    // Gearing from the motor rotor to final shaft.
-    // In this example GearBox.fromReductionStages(3,4) is the same as GearBox.fromStages("3:1","4:1") which corresponds to the gearbox attached to your motor.
-    // You could also use .withGearing(12) which does the same thing.
-    .withGearing(new MechanismGearing(7.25))
-    // Motor properties to prevent over currenting.
-    .withMotorInverted(false)
-    .withIdleMode(MotorMode.BRAKE)
-    .withStatorCurrentLimit(Amps.of(40))
-    .withClosedLoopRampRate(Seconds.of(0.25))
-    .withOpenLoopRampRate(Seconds.of(0.25));
-
   // Vendor motor controller object
   private SparkMax spark = new SparkMax(7, MotorType.kBrushless);
-
-  // Create our SmartMotorController from our Spark and config with the NEO.
-  private SmartMotorController sparkSmartMotorController = new SparkWrapper(spark, DCMotor.getNEO(2), smcConfig);
-
-  private ElevatorConfig elevconfig = new ElevatorConfig(sparkSmartMotorController)
-      .withStartingHeight(Meters.of(0.0))
-      .withHardLimits(Meters.of(0), Meters.of(1.6002))
-      .withTelemetry("Elevator", TelemetryVerbosity.HIGH)
-      .withMass(Pounds.of(15));
-
-  // Elevator Mechanism
-  private Elevator elevator = new Elevator(elevconfig);
+  private ElevatorFeedforward feedforward = new ElevatorFeedforward(0, 0, 0);
+  private ProfiledPIDController pid= new ProfiledPIDController(
+    0,0,0,
+    new TrapezoidProfile.Constraints(5, 10));
 
   /**
    * Set the height of the elevator.
    * @param angle Distance to go to.
    */
-  public Command setHeight(Distance height) { return elevator.setHeight(height);}
+  public void setHeight(double height) { 
+    double pidVal = pid.calculate(spark.getEncoder().getPosition(), height);
+    spark.setVoltage(
+      pidVal + feedforward.calculate(height)
+    );
+  }
 
   /**
    * Move the elevator up and down.
    * @param dutycycle [-1, 1] speed to set the elevator too.
    */
-  public Command set(double dutycycle) { return elevator.set(dutycycle);}
+  public void set(double dutycycle) { spark.setVoltage(dutycycle);}
 
   /**
    * Run sysId on the {@link Elevator}
    */
-  public Command sysId() { return elevator.sysId(Volts.of(7), Volts.of(2).per(Second), Seconds.of(4));}
 
   /** Creates a new ExampleSubsystem. */
   public ElevatorSubsystem() {}
@@ -118,17 +95,5 @@ public class ElevatorSubsystem extends SubsystemBase {
   public boolean exampleCondition() {
     // Query some boolean state, such as a digital sensor.
     return false;
-  }
-
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-    elevator.updateTelemetry();
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
-    elevator.simIterate();
   }
 }

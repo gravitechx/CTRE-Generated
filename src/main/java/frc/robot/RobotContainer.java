@@ -31,7 +31,6 @@ import frc.robot.subsystems.Coral;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.PivotSubsystem;
 import frc.robot.subsystems.Wrist;
 
 public class RobotContainer {
@@ -53,7 +52,6 @@ public class RobotContainer {
 
     private boolean isCoralMode = true;
     private Pivot pivot = new Pivot();
-    private PivotSubsystem pivotSub = new PivotSubsystem();
     private ElevatorSubsystem elevSub = new ElevatorSubsystem();
     private Wrist wrist = new Wrist();
     private Elevator elevator = new Elevator(pivot);
@@ -85,21 +83,23 @@ public class RobotContainer {
         Trigger isCoralMode = new Trigger(() -> this.isCoralMode);
         Trigger isAlgaeMode = isCoralMode.negate();
 
-        joystick.a().whileTrue(pivotSub.setAngle(Degrees.of(-20)));
-        joystick.b().whileTrue(pivotSub.setAngle(Degrees.of(60)));
+        // joystick.a().whileTrue(pivotSub.setAngle(Degrees.of(-20)));
+        // joystick.b().whileTrue(pivotSub.setAngle(Degrees.of(60)));
         // Schedule `set` when the Xbox controller's B button is pressed,
         // cancelling on release.
-        joystick.x().whileTrue(pivotSub.set(0.3));
-        joystick.y().whileTrue(pivotSub.set(-0.3));
+        // joystick.x().whileTrue(pivotSub.set(0.3));
+        // joystick.y().whileTrue(pivotSub.set(-0.3));
 
         // Schedule `setHeight` when the Xbox controller's B button is pressed,
         // cancelling on release.
-        joystick.povDown().whileTrue(elevSub.setHeight(Meters.of(0)));
-        joystick.povRight().whileTrue(elevSub.setHeight(Meters.of(1.5)));
+        joystick.a().whileTrue(new InstantCommand(() -> elevSub.setHeight(0)));
+        joystick.b().whileTrue(new InstantCommand(() -> elevSub.setHeight(10)));
+        joystick.x().onTrue(new InstantCommand(() -> elevSub.setHeight(15)));
+        joystick.y().onTrue(new InstantCommand(() -> elevSub.setHeight(20)));
         // Schedule `set` when the Xbox controller's B button is pressed,
         // cancelling on release.
-        joystick.povLeft().whileTrue(elevSub.set(0.3));
-        joystick.povUp().whileTrue(elevSub.set(-0.3));
+        joystick.povLeft().whileTrue(new InstantCommand(() -> elevSub.set(0.3)));
+        joystick.povUp().whileTrue(new InstantCommand(() -> elevSub.set(-0.3)));
 
         // joystick.leftTrigger().and(isCoralMode).onTrue(new ParallelCommandGroup(
         //     new WristCommand(wrist, Constants.WristConstants.horizontalAngle),
