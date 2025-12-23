@@ -4,60 +4,60 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Feet;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Pounds;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
-
-import java.security.spec.EdECPoint;
-
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.measure.Distance;
+import dev.doglog.DogLog;
+
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import yams.gearing.GearBox;
-import yams.gearing.MechanismGearing;
-import yams.mechanisms.SmartMechanism;
-import yams.mechanisms.config.ElevatorConfig;
-import yams.mechanisms.positional.Elevator;
-import yams.motorcontrollers.SmartMotorController;
-import yams.motorcontrollers.SmartMotorControllerConfig;
-import yams.motorcontrollers.SmartMotorControllerConfig.ControlMode;
-import yams.motorcontrollers.SmartMotorControllerConfig.MotorMode;
-import yams.motorcontrollers.SmartMotorControllerConfig.TelemetryVerbosity;
-import yams.motorcontrollers.local.SparkWrapper;
 
 public class ElevatorSubsystem extends SubsystemBase {
 
   // Vendor motor controller object
-  private SparkMax spark = new SparkMax(7, MotorType.kBrushless);
-  private ElevatorFeedforward feedforward = new ElevatorFeedforward(0, 0, 0);
-  private ProfiledPIDController pid= new ProfiledPIDController(
-    0,0,0,
-    new TrapezoidProfile.Constraints(5, 10));
+  private SparkMax spark = new SparkMax(4, MotorType.kBrushless);
+  private SparkMax follow = new SparkMax(5, MotorType.kBrushless);
+  private SparkMaxConfig config = new SparkMaxConfig();
+  private SparkMaxConfig config2 = new SparkMaxConfig();
+  private SparkClosedLoopController sparkPID = spark.getClosedLoopController();
 
+    public ElevatorSubsystem(){
+      config.closedLoop
+      .p(0.1)
+      .i(0)
+      .d(0)
+      .velocityFF(0)
+      .outputRange(-0.1, 2);
+      config.softLimit
+        .forwardSoftLimitEnabled(true)
+        .forwardSoftLimit(24.4)
+        .reverseSoftLimitEnabled(true)
+        .reverseSoftLimit(1);
+      config.closedLoopRampRate(0.3);
+      config.openLoopRampRate(0.5);
+      config.idleMode(IdleMode.kBrake);
+
+      config.closedLoop.maxMotion
+        .maxVelocity(1)
+        .allowedClosedLoopError(0.2)
+        .maxAcceleration(0.01);
+      
+      config2.follow(4);
+      follow.configure(config2, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      spark.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    }
   /**
    * Set the height of the elevator.
    * @param angle Distance to go to.
    */
   public void setHeight(double height) { 
-    double pidVal = pid.calculate(spark.getEncoder().getPosition(), height);
-    spark.setVoltage(
-      pidVal + feedforward.calculate(height)
-    );
+    sparkPID.setReference(height, ControlType.kPosition);
   }
 
   /**
@@ -71,20 +71,20 @@ public class ElevatorSubsystem extends SubsystemBase {
    */
 
   /** Creates a new ExampleSubsystem. */
-  public ElevatorSubsystem() {}
 
   /**
    * Example command factory method.
    *
    * @return a command
    */
-  public Command exampleMethodCommand() {
-    // Inline construction of command goes here.
-    // Subsystem::RunOnce implicitly requires `this` subsystem.
-    return runOnce(
-        () -> {
-          /* one-time action goes here */
-        });
+
+  public void periodic(){
+    DogLog.log("velocity", spark.getEncoder().getVelocity());
+    DogLog.log("pos", spark.getEncoder().getPosition());
+    DogLog.log("applied output", spark.getAppliedOutput());
+    DogLog.log("voltage?", spark.getBusVoltage());
+
+
   }
 
   /**

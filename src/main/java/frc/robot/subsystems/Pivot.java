@@ -4,11 +4,13 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
@@ -24,6 +26,7 @@ public class Pivot extends SubsystemBase {
   private TalonFX pivotMotor;
   private TalonFXConfiguration config;
   private final PositionVoltage anglePOS = new PositionVoltage(0);
+  private MotionMagicVoltage m_request;
 
   private final DCMotorSim m_motorSimModel = new DCMotorSim(
     LinearSystemId.createDCMotorSystem(
@@ -40,40 +43,34 @@ public class Pivot extends SubsystemBase {
     config.CurrentLimits.SupplyCurrentLimit = 35;
     config.CurrentLimits.SupplyCurrentLowerLimit = 60;
     config.CurrentLimits.SupplyCurrentLowerTime =  .1;
-    config.Slot0.kP = Constants.PivotConstants.pivotKP;
-    config.Slot0.kI = Constants.PivotConstants.pivotKI;
-    config.Slot0.kD = Constants.PivotConstants.pivotKD;
+    config.Slot0.kP = 4.5;
+    config.Slot0.kI = 0;
+    config.Slot0.kD = 0.1;
+    config.Slot0.kS = 0.2;
+    config.Slot0.kV = 0.11;
+    config.Slot0.kA = 0;
+    config.Slot0.kG = 0;
+
+    config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+    config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 10;
+    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 1;
+    config.MotionMagic.MotionMagicCruiseVelocity = 60;
+    config.MotionMagic.MotionMagicAcceleration = 50;
+    config.MotionMagic.MotionMagicJerk = 200;
+
     
     pivotMotor = new TalonFX(9);
     pivotMotor.getConfigurator().apply(config);
     pivotMotor.setPosition(0);
-    pivotMotor.setControl(anglePOS.withPosition(3.3));
 
-    // pivotMotor = new SparkMax(18, MotorType.kBrushless);
-    // sensor = new DigitalInput(0);
-
-    // pivotEncoder = pivotMotor.getEncoder();
-    // pivotMotor.configure(Constants.CoralConstants.coralMotorConfig,
-    // Constants.CoralConstants.coralResetMode,
-    // Constants.CoralConstants.coralPersistMode);
-
-    // pivotEncoder.setPosition(0);
+    m_request = new MotionMagicVoltage(0);
 
   }
-
-  // public Boolean hasCoral() {
-  // return sensor.get();
-  // }
 
   public void setMotor(double POS) {
     // pivotMotor.set(speed);
-    pivotMotor.setControl(anglePOS.withPosition(POS));
-  }
-
-  public void kathunk(double kathunkVal) {
-    if (kathunkVal == -4) {
-      setMotor(17.5);
-    }
+    pivotMotor.setControl(m_request.withPosition(POS));
   }
 
   public double getEncoderPosition() {
@@ -83,6 +80,11 @@ public class Pivot extends SubsystemBase {
 
   public void periodic() {
     SmartDashboard.putNumber("Pivot encoder", getEncoderPosition());
+    DogLog.log("pivot velocity", pivotMotor.getVelocity().getValueAsDouble());
+    DogLog.log("pivot voltage", pivotMotor.getMotorVoltage().getValueAsDouble());
+    DogLog.log("pivot pos", pivotMotor.getPosition().getValueAsDouble());
+
+
   }
 
   private static final double kGearRatio = 10.0;

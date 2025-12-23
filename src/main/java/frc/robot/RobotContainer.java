@@ -20,15 +20,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.ElevatorCommand;
-import frc.robot.commands.ElevatorCommandFun;
 import frc.robot.commands.IntakeSourceCMD;
-import frc.robot.commands.PositionArmCMD;
-import frc.robot.commands.WristCommand;
+// import frc.robot.commands.PositionArmCMD;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Coral;
-import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.Pivot;
 import frc.robot.subsystems.Wrist;
@@ -54,7 +50,7 @@ public class RobotContainer {
     private Pivot pivot = new Pivot();
     private ElevatorSubsystem elevSub = new ElevatorSubsystem();
     private Wrist wrist = new Wrist();
-    private Elevator elevator = new Elevator(pivot);
+    // private Elevator elevator = new Elevator(pivot);
     private Coral coral = new Coral();
 
     public RobotContainer() {
@@ -92,10 +88,18 @@ public class RobotContainer {
 
         // Schedule `setHeight` when the Xbox controller's B button is pressed,
         // cancelling on release.
-        joystick.a().whileTrue(new InstantCommand(() -> elevSub.setHeight(0)));
-        joystick.b().whileTrue(new InstantCommand(() -> elevSub.setHeight(10)));
-        joystick.x().onTrue(new InstantCommand(() -> elevSub.setHeight(15)));
-        joystick.y().onTrue(new InstantCommand(() -> elevSub.setHeight(20)));
+        // joystick.a().whileTrue(new InstantCommand(() -> elevSub.setHeight(1)));
+        // joystick.b().whileTrue(new InstantCommand(() -> elevSub.setHeight(5)));
+        // joystick.x().onTrue(new InstantCommand(() -> elevSub.setHeight(12)));
+        // joystick.y().onTrue(new InstantCommand(() -> elevSub.setHeight(17)));
+        // joystick.rightBumper().onTrue(new InstantCommand(() -> elevSub.setHeight(24.5)));
+
+        joystick.a().onTrue(new InstantCommand(() -> pivot.setMotor(0)));
+        joystick.b().onTrue(new InstantCommand(() -> pivot.setMotor(3.5)));
+        joystick.x().onTrue(new InstantCommand(() -> pivot.setMotor(7)));
+        joystick.y().onTrue(new InstantCommand(() -> pivot.setMotor(10)));
+
+
         // Schedule `set` when the Xbox controller's B button is pressed,
         // cancelling on release.
         joystick.povLeft().whileTrue(new InstantCommand(() -> elevSub.set(0.3)));
