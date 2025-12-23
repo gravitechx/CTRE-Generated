@@ -11,12 +11,13 @@ import com.revrobotics.spark.config.SoftLimitConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
 public class Wrist extends SubsystemBase{
-    private final SparkMax motor = new SparkMax(18, MotorType.kBrushless); //Change to actual wrist port
+    private final SparkMax motor = new SparkMax(18, MotorType.kBrushless);
     private final SparkMaxConfig config;
     private final SparkClosedLoopController motorPID;
 
@@ -27,23 +28,23 @@ public class Wrist extends SubsystemBase{
 
         SoftLimitConfig softLimit = new SoftLimitConfig();
         softLimit.forwardSoftLimit(0);
-        softLimit.reverseSoftLimit(-4.5);
+        softLimit.reverseSoftLimit(-4.6);
         softLimit.forwardSoftLimitEnabled(true);
         softLimit.reverseSoftLimitEnabled(true);
         config.apply(softLimit);
 
         config.closedLoop
-            .p(0.4)
+            .p(0.1)
             .i(0)
             .d(0)
             .velocityFF(0)
-            .outputRange(0.1, 0.1);
+            .outputRange(-0.13, 0.1);
 
-        config.closedLoopRampRate(0.3);
+        config.closedLoopRampRate(1);
 
         config.closedLoop.maxMotion
             .maxVelocity(1)
-            .allowedClosedLoopError(0.2)
+            .allowedClosedLoopError(0.1)
             .maxAcceleration(0.01);
 
         motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -54,8 +55,20 @@ public class Wrist extends SubsystemBase{
         motorPID.setReference(position, ControlType.kPosition);
     }
 
-    public void periodic() {
+    public void setHorizantal(){
+        motorPID.setReference(0, ControlType.kPosition);
+    }
 
+    public void setVertical(){
+        motorPID.setReference(-2.7, ControlType.kPosition);
+    }
+
+    public void setFlip(){
+        motorPID.setReference(-4.6, ControlType.kPosition);
+    }
+
+    public void periodic() {
+        DogLog.log("wrist pos", motor.getEncoder().getPosition());
     }
     }
 

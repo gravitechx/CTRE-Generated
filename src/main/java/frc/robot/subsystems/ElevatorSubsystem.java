@@ -33,18 +33,18 @@ public class ElevatorSubsystem extends SubsystemBase {
       .i(0)
       .d(0)
       .velocityFF(0)
-      .outputRange(-0.1, 2);
+      .outputRange(-0.2, 3);
       config.softLimit
         .forwardSoftLimitEnabled(true)
-        .forwardSoftLimit(24.4)
+        .forwardSoftLimit(25.2)
         .reverseSoftLimitEnabled(true)
         .reverseSoftLimit(1);
-      config.closedLoopRampRate(0.3);
+      config.closedLoopRampRate(0.2);
       config.openLoopRampRate(0.5);
       config.idleMode(IdleMode.kBrake);
 
       config.closedLoop.maxMotion
-        .maxVelocity(1)
+        .maxVelocity(2)
         .allowedClosedLoopError(0.2)
         .maxAcceleration(0.01);
       

@@ -2,10 +2,8 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Volts;
 
-import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -17,7 +15,6 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 
 public class Pivot extends SubsystemBase {
   // private SparkMax pivotMotor;
@@ -25,7 +22,6 @@ public class Pivot extends SubsystemBase {
   // private DigitalInput sensor;
   private TalonFX pivotMotor;
   private TalonFXConfiguration config;
-  private final PositionVoltage anglePOS = new PositionVoltage(0);
   private MotionMagicVoltage m_request;
 
   private final DCMotorSim m_motorSimModel = new DCMotorSim(
@@ -53,7 +49,7 @@ public class Pivot extends SubsystemBase {
 
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 10;
+    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 15.2;
     config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 1;
     config.MotionMagic.MotionMagicCruiseVelocity = 60;
     config.MotionMagic.MotionMagicAcceleration = 50;
@@ -69,13 +65,19 @@ public class Pivot extends SubsystemBase {
   }
 
   public void setMotor(double POS) {
-    // pivotMotor.set(speed);
     pivotMotor.setControl(m_request.withPosition(POS));
   }
 
   public double getEncoderPosition() {
-    // return pivotEncoder.getPosition();
     return pivotMotor.getPosition().getValueAsDouble();
+  }
+
+  public double getKathuk() {
+    if(pivotMotor.getPosition().getValueAsDouble()>12) {
+      return 15;
+    } else {
+      return 3.9;
+    }
   }
 
   public void periodic() {
