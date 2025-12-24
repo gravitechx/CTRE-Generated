@@ -22,14 +22,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.IntakeSourceCMD;
-// import frc.robot.commands.PositionArmCMD;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.ClawSubsystem;
+import frc.robot.subsystems.claw.ClawSubsystem;
+import frc.robot.subsystems.elevator.ElevatorSubsystem;
+import frc.robot.subsystems.pivot.PivotSubsystem;
+import frc.robot.subsystems.wrist.WristSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.PivotSubsystem;
-import frc.robot.subsystems.WristSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)*0.5; // kSpeedAt12Volts desired top speed
@@ -49,9 +47,9 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private boolean isCoralMode = true;
-    private PivotSubsystem pivot = new PivotSubsystem();
-    private ElevatorSubsystem elevSub = new ElevatorSubsystem();
-    private WristSubsystem wrist = new WristSubsystem();
+    // private PivotSubsystem pivot = new PivotSubsystem();
+    // private ElevatorSubsystem elevSub = new ElevatorSubsystem();
+    // private WristSubsystem wrist = new WristSubsystem();
     // private RobotManager botManager = new RobotManager();
     private ClawSubsystem claw = new ClawSubsystem();
 
@@ -84,10 +82,12 @@ public class RobotContainer {
         joystick.leftTrigger().onTrue(new InstantCommand(() -> claw.setState("CORAL_INTAKE")));
 
         joystick.rightTrigger().onTrue(new InstantCommand(() -> claw.setState("NUETRAL")));
-        joystick.a().onTrue(new InstantCommand(() -> pivot.setState("IDLE")));
-        joystick.b().onTrue(new InstantCommand(() -> pivot.setState("CORAL_INTAKE")));
-        joystick.y().onTrue(new InstantCommand(() -> pivot.setState("DOWN")));
-        joystick.rightBumper().onTrue(new InstantCommand(() -> wrist.setState("VERTICAL")));
+
+        joystick.rightBumper().onTrue(new InstantCommand(() -> claw.setState("ALGAE_HOLDING")));
+        // joystick.a().onTrue(new InstantCommand(() -> pivot.setState("IDLE")));
+        // joystick.b().onTrue(new InstantCommand(() -> pivot.setState("CORAL_INTAKE")));
+        // joystick.y().onTrue(new InstantCommand(() -> pivot.setState("DOWN")));
+        // joystick.rightBumper().onTrue(new InstantCommand(() -> wrist.setState("VERTICAL")));
      
         // drivetrain.registerTelemetry(logger::telemeterize);
     }

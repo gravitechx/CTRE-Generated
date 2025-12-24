@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.wrist;
 
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
@@ -12,17 +12,14 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.elevator.ElevatorState;
 
 
 public class WristSubsystem extends SubsystemBase{
     private final SparkMax motor;
     private final SparkMaxConfig config;
     private final SparkClosedLoopController motorPID;
-    public enum WristState{
-        HORIZANTAL,
-        VERTICAL,
-        FLIPPED
-    }
+    
     WristState wState = WristState.HORIZANTAL;
 
     public WristSubsystem() {
@@ -55,46 +52,16 @@ public class WristSubsystem extends SubsystemBase{
     }
 
     
-    public void setPosition(double position) {
-        motorPID.setReference(position, ControlType.kPosition);
-    }
-
-    public void setHorizantal(){
-        motorPID.setReference(0, ControlType.kPosition);
-    }
-
-    public void setVertical(){
-        motorPID.setReference(-2.7, ControlType.kPosition);
-    }
-
-    public void setFlip(){
-        motorPID.setReference(-4.6, ControlType.kPosition);
+    public void setPosition() {
+        motorPID.setReference(wState.getPosition(), ControlType.kPosition);
     }
 
     public void setState(String state){
-        if(state.equals("FLIPPED")){
-            wState = WristState.FLIPPED;
-        }
-        else if(state.equals("HORIZANTAL")){
-            wState = WristState.HORIZANTAL;
-        }
-        else if(state.equals("VERTICAL")){
-            wState = WristState.VERTICAL;
-        }
+        wState = WristState.valueOf(state);
+        setPosition();
     }
 
     public void periodic() {
-        switch(wState){
-            case HORIZANTAL:
-                setHorizantal();
-                break;
-            case VERTICAL:
-                setVertical();
-                break;
-            case FLIPPED:
-                setFlip();
-                break;
-        }
         DogLog.log("wrist state", wState);
     }
     }
