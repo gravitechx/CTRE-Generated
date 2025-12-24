@@ -15,19 +15,35 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ElevatorSubsystem extends SubsystemBase {
-
-  // Vendor motor controller object
-  private SparkMax spark = new SparkMax(4, MotorType.kBrushless);
-  private SparkMax follow = new SparkMax(5, MotorType.kBrushless);
+  private SparkMax spark;
+  private SparkMax follow;
   private SparkMaxConfig config = new SparkMaxConfig();
   private SparkMaxConfig config2 = new SparkMaxConfig();
-  private SparkClosedLoopController sparkPID = spark.getClosedLoopController();
+  private SparkClosedLoopController sparkPID;
+  public enum ElevatorState{
+    BOTTOM,
+    INTAKE,
+    L1,
+    L2,
+    L3,
+    L4,
+    L2ALGAE,
+    L3ALGAE,
+    BARGE,
+    PROCESSOR
+  }
+  ElevatorState eState = ElevatorState.BOTTOM;
 
     public ElevatorSubsystem(){
+      spark = new SparkMax(4, MotorType.kBrushless);
+      follow = new SparkMax(5, MotorType.kBrushless);
+      sparkPID = spark.getClosedLoopController();
       config.closedLoop
       .p(0.1)
       .i(0)
@@ -52,48 +68,86 @@ public class ElevatorSubsystem extends SubsystemBase {
       follow.configure(config2, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
       spark.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
-  /**
-   * Set the height of the elevator.
-   * @param angle Distance to go to.
-   */
+
   public void setHeight(double height) { 
     sparkPID.setReference(height, ControlType.kPosition);
   }
 
-  /**
-   * Move the elevator up and down.
-   * @param dutycycle [-1, 1] speed to set the elevator too.
-   */
-  public void set(double dutycycle) { spark.setVoltage(dutycycle);}
-
-  /**
-   * Run sysId on the {@link Elevator}
-   */
-
-  /** Creates a new ExampleSubsystem. */
-
-  /**
-   * Example command factory method.
-   *
-   * @return a command
-   */
+  public void setState(String state){
+    if(state.equals("BOTTOM")){
+      eState = ElevatorState.BOTTOM;
+    }
+    else if(state.equals("INTAKE")){
+      eState = ElevatorState.INTAKE;
+    }
+    else if(state.equals("L1")){
+      eState = ElevatorState.L1;
+    }
+    else if(state.equals("L2")){
+      eState = ElevatorState.L2;
+    }
+    else if(state.equals("L3")){
+      eState = ElevatorState.L3;
+    }
+    else if(state.equals("L4")){
+      eState = ElevatorState.L4;
+    }
+    else if(state.equals("L2ALGAE")){
+      eState = ElevatorState.L2ALGAE;
+    }
+    else if(state.equals("L3ALGAE")){
+      eState = ElevatorState.L3ALGAE;
+    }
+    else if(state.equals("BARGE")){
+      eState = ElevatorState.BARGE;
+    }
+    else if(state.equals("PROCESSOR")){
+      eState = ElevatorState.PROCESSOR;
+    }
+  }
 
   public void periodic(){
     DogLog.log("velocity", spark.getEncoder().getVelocity());
     DogLog.log("pos", spark.getEncoder().getPosition());
     DogLog.log("applied output", spark.getAppliedOutput());
     DogLog.log("voltage?", spark.getBusVoltage());
+    DogLog.log("elevator state", eState);
 
-
+    switch(eState){
+      case BOTTOM:
+        setHeight(0);
+        break;
+      case INTAKE:
+        setHeight(1);
+        break;
+      case L1:
+        setHeight(1); //idk this one yet
+        break;
+      case L2:
+        setHeight(6.9);
+        break;
+      case L3:
+        setHeight(14.6);
+        break;
+      case L4:
+        setHeight(25.2);
+        break;
+      case L2ALGAE:
+        setHeight(8); //idk yet
+        break;
+      case L3ALGAE:
+        setHeight(12); //idk yet
+        break;
+      case BARGE:
+        setHeight(25.2);
+        break;
+      case PROCESSOR:
+        setHeight(1); //idk yet
+        break;
+    }
   }
 
-  /**
-   * An example method querying a boolean state of the subsystem (for example, a digital sensor).
-   *
-   * @return value of some boolean subsystem state, such as a digital sensor.
-   */
   public boolean exampleCondition() {
-    // Query some boolean state, such as a digital sensor.
     return false;
   }
 }

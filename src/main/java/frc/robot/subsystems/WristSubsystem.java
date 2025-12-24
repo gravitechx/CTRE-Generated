@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -12,20 +11,25 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import dev.doglog.DogLog;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
-public class Wrist extends SubsystemBase{
-    private final SparkMax motor = new SparkMax(18, MotorType.kBrushless);
+public class WristSubsystem extends SubsystemBase{
+    private final SparkMax motor;
     private final SparkMaxConfig config;
     private final SparkClosedLoopController motorPID;
+    public enum WristState{
+        HORIZANTAL,
+        VERTICAL,
+        FLIPPED
+    }
+    WristState wState = WristState.HORIZANTAL;
 
-    public Wrist() {
+    public WristSubsystem() {
+        motor = new SparkMax(18, MotorType.kBrushless);
         config  = new SparkMaxConfig();
         motorPID = motor.getClosedLoopController();
         config.idleMode(IdleMode.kBrake);
-
         SoftLimitConfig softLimit = new SoftLimitConfig();
         softLimit.forwardSoftLimit(0);
         softLimit.reverseSoftLimit(-4.6);
@@ -67,8 +71,31 @@ public class Wrist extends SubsystemBase{
         motorPID.setReference(-4.6, ControlType.kPosition);
     }
 
+    public void setState(String state){
+        if(state.equals("FLIPPED")){
+            wState = WristState.FLIPPED;
+        }
+        else if(state.equals("HORIZANTAL")){
+            wState = WristState.HORIZANTAL;
+        }
+        else if(state.equals("VERTICAL")){
+            wState = WristState.VERTICAL;
+        }
+    }
+
     public void periodic() {
-        DogLog.log("wrist pos", motor.getEncoder().getPosition());
+        switch(wState){
+            case HORIZANTAL:
+                setHorizantal();
+                break;
+            case VERTICAL:
+                setVertical();
+                break;
+            case FLIPPED:
+                setFlip();
+                break;
+        }
+        DogLog.log("wrist state", wState);
     }
     }
 

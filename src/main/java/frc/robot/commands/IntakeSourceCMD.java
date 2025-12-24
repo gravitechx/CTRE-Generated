@@ -3,19 +3,19 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Coral;
+import frc.robot.subsystems.ClawSubsystem;
 
 public class IntakeSourceCMD extends Command{
     private Timer intakeEndDelay = new Timer();
     private final double endCommandDelay = 0.1;//how long we keep moving motors for after motor speed change
-    private Coral coral;
+    private ClawSubsystem coral;
     private final double threshold = 30;
     private double motorSpeed;
     private double startTime;
     private double initialDelay = 2;
 
 
-    public IntakeSourceCMD(Coral coralSub, double speed){
+    public IntakeSourceCMD(ClawSubsystem coralSub, double speed){
         this.coral = coralSub;
         this.motorSpeed = speed;
         addRequirements(coral);

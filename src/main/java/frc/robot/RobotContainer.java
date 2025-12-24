@@ -25,11 +25,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.IntakeSourceCMD;
 // import frc.robot.commands.PositionArmCMD;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.ClawSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.Coral;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.Pivot;
-import frc.robot.subsystems.Wrist;
+import frc.robot.subsystems.PivotSubsystem;
+import frc.robot.subsystems.WristSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)*0.5; // kSpeedAt12Volts desired top speed
@@ -37,7 +37,7 @@ public class RobotContainer {
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.2).withRotationalDeadband(MaxAngularRate * 0.2) // Add a 20% deadband
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 20% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest .PointWheelsAt();
@@ -49,11 +49,11 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private boolean isCoralMode = true;
-    private Pivot pivot = new Pivot();
+    private PivotSubsystem pivot = new PivotSubsystem();
     private ElevatorSubsystem elevSub = new ElevatorSubsystem();
-    private Wrist wrist = new Wrist();
-    // private Elevator elevator = new Elevator(pivot);
-    private Coral coral = new Coral();
+    private WristSubsystem wrist = new WristSubsystem();
+    // private RobotManager botManager = new RobotManager();
+    private ClawSubsystem claw = new ClawSubsystem();
 
     public RobotContainer() {
         configureBindings();
@@ -65,9 +65,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate*.5) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-(joystick.getLeftY() * Math.abs(joystick.getLeftY())) * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-(joystick.getLeftX() * Math.abs(joystick.getLeftX())) * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-(joystick.getRightX() * Math.abs(joystick.getRightX())) * MaxAngularRate*.5) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -81,78 +81,14 @@ public class RobotContainer {
         Trigger isCoralMode = new Trigger(() -> this.isCoralMode);
         Trigger isAlgaeMode = isCoralMode.negate();
 
-        // joystick.a().whileTrue(pivotSub.setAngle(Degrees.of(-20)));
-        // joystick.b().whileTrue(pivotSub.setAngle(Degrees.of(60)));
-        // Schedule `set` when the Xbox controller's B button is pressed,
-        // cancelling on release.
-        // joystick.x().whileTrue(pivotSub.set(0.3));
-        // joystick.y().whileTrue(pivotSub.set(-0.3));
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> claw.setState("CORAL_INTAKE")));
 
-        // Schedule `setHeight` when the Xbox controller's B button is pressed,
-        // cancelling on release.
-        // joystick.a().whileTrue(new InstantCommand(() -> elevSub.setHeight(1)));
-        // joystick.b().whileTrue(new InstantCommand(() -> elevSub.setHeight(5)));
-        // joystick.x().onTrue(new InstantCommand(() -> elevSub.setHeight(12)));
-        // joystick.y().onTrue(new InstantCommand(() -> elevSub.setHeight(17)));
-        // joystick.rightBumper().onTrue(new InstantCommand(() -> elevSub.setHeight(24.5)));
-
-        // joystick.a().onTrue(new InstantCommand(() -> coral.setMotor(-5)));
-        // joystick.a().onFalse(new InstantCommand(() -> coral.setMotor(0)));
-        // joystick.b().onTrue(new InstantCommand(() -> coral.setMotor(5)));
-        // joystick.b().onFalse(new InstantCommand(() -> coral.setMotor(0)));
-        // joystick.x().onTrue(new InstantCommand(() -> coral.setMotor(0)));
-        // joystick.y().onTrue(new InstantCommand(() -> pivot.setMotor(3.3)));
-
-        joystick.leftTrigger().onTrue(new ParallelCommandGroup(
-            new InstantCommand(() -> wrist.setVertical()),
-            new InstantCommand(() -> elevSub.setHeight(1)),
-            new InstantCommand(() -> pivot.setMotor(13.1)),
-            new InstantCommand(() -> coral.setMotor(-6))
-        ))
-        .onFalse(new ParallelCommandGroup(
-            new InstantCommand(() -> pivot.setMotor(3.3)),
-            new InstantCommand(() -> coral.setMotor(0))
-        ));
-
-        joystick.rightTrigger().onTrue(
-            new SequentialCommandGroup(
-            new InstantCommand(() -> pivot.setMotor(pivot.getKathuk())),
-            new WaitCommand(0.2),
-            new InstantCommand(() -> elevSub.setHeight(1))
-            )
-        );
-
-        joystick.rightStick().onTrue(new InstantCommand(() -> coral.setMotor(4)));
-        joystick.rightStick().onFalse(new InstantCommand(() -> coral.setMotor(0)));
-
-
-        joystick.leftStick().onTrue(new InstantCommand(() -> wrist.setFlip()));
-
-        joystick.b().onTrue(new ParallelCommandGroup(
-            new InstantCommand(() -> pivot.setMotor(2.3)),
-            new InstantCommand(() -> wrist.setHorizantal()),
-            new InstantCommand(() -> elevSub.setHeight(6.9))
-        )
-        );
-
-        joystick.x().onTrue(
-            new ParallelCommandGroup(
-                new InstantCommand(() -> pivot.setMotor(2.5)),
-                new InstantCommand(() -> wrist.setHorizantal()),
-                new InstantCommand(() -> elevSub.setHeight(14.6))
-            )
-        );
-
-        joystick.y().onTrue(
-            new ParallelCommandGroup(
-                new InstantCommand(() -> wrist.setHorizantal()),
-                new InstantCommand(() -> elevSub.setHeight(25.2)),
-                new InstantCommand(() -> pivot.setMotor(3.6))
-            )
-        );
-
-        joystick.povLeft().onTrue(new InstantCommand(() -> pivot.setMotor(3.3)));
-        
+        joystick.rightTrigger().onTrue(new InstantCommand(() -> claw.setState("NUETRAL")));
+        joystick.a().onTrue(new InstantCommand(() -> pivot.setState("IDLE")));
+        joystick.b().onTrue(new InstantCommand(() -> pivot.setState("CORAL_INTAKE")));
+        joystick.y().onTrue(new InstantCommand(() -> pivot.setState("DOWN")));
+        joystick.rightBumper().onTrue(new InstantCommand(() -> wrist.setState("VERTICAL")));
+     
         // drivetrain.registerTelemetry(logger::telemeterize);
     }
 

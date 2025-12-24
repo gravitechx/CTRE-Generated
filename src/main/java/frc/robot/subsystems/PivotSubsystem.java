@@ -14,12 +14,11 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Pivot extends SubsystemBase {
-  // private SparkMax pivotMotor;
-  // private RelativeEncoder pivotEncoder;
-  // private DigitalInput sensor;
+public class PivotSubsystem extends SubsystemBase {
   private TalonFX pivotMotor;
   private TalonFXConfiguration config;
   private MotionMagicVoltage m_request;
@@ -29,9 +28,25 @@ public class Pivot extends SubsystemBase {
        DCMotor.getKrakenX60Foc(1), 0.001, kGearRatio
     ),
     DCMotor.getKrakenX60Foc(1)
- );
+  );
 
-  public Pivot() {
+  public enum PivotState{
+    BACK,
+    IDLE,
+    CORAL_INTAKE,
+    DOWN,
+    ALGAE_INTAKE,
+    PROCESSOR,
+    L1,
+    L2L3,
+    L4,
+    BARGE,
+    SCORING
+  }
+  PivotState pState = PivotState.BACK;
+  
+
+  public PivotSubsystem() {
     config = new TalonFXConfiguration();
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -64,7 +79,7 @@ public class Pivot extends SubsystemBase {
 
   }
 
-  public void setMotor(double POS) {
+  public void setPos(double POS) {
     pivotMotor.setControl(m_request.withPosition(POS));
   }
 
@@ -80,12 +95,84 @@ public class Pivot extends SubsystemBase {
     }
   }
 
+  public void setState(String state){
+    if(state.equals("BACK")){
+      pState = PivotState.BACK;
+    }
+    else if(state.equals("IDLE")){
+      pState = PivotState.IDLE;
+    }
+    else if(state.equals("CORAL_INTAKE")){
+      pState = PivotState.CORAL_INTAKE;
+    }
+    else if(state.equals("DOWN")){
+      pState = PivotState.DOWN;
+    }
+    else if(state.equals("ALGAE_INTAKE")){
+      pState = PivotState.ALGAE_INTAKE;
+    }
+    else if(state.equals("PROCESSOR")){
+      pState = PivotState.PROCESSOR;
+    }
+    else if(state.equals("L1")){
+      pState = PivotState.L1;
+    }
+    else if(state.equals("L2L3")){
+      pState = PivotState.L2L3;
+    }
+    else if(state.equals("L4")){
+      pState = PivotState.L4;
+    }
+    else if(state.equals("BARGE")){
+      pState = PivotState.BARGE;
+    }
+    else if(state.equals("SCORING")){
+      pState = PivotState.SCORING;
+    }
+
+  }
+
   public void periodic() {
     SmartDashboard.putNumber("Pivot encoder", getEncoderPosition());
     DogLog.log("pivot velocity", pivotMotor.getVelocity().getValueAsDouble());
     DogLog.log("pivot voltage", pivotMotor.getMotorVoltage().getValueAsDouble());
     DogLog.log("pivot pos", pivotMotor.getPosition().getValueAsDouble());
 
+    switch(pState){
+      case BACK:
+        setPos(1);
+        break;
+      case IDLE:
+        setPos(3.3);
+        break;
+      case CORAL_INTAKE:
+        setPos(13.1);
+        break;
+      case DOWN:
+        setPos(15);
+        break;
+      case ALGAE_INTAKE:
+        setPos(12); //idk this
+        break;
+      case PROCESSOR:
+        setPos(10); //idk this
+        break;
+      case L1:
+        setPos(5); //idk this
+        break;
+      case L2L3:
+        setPos(2.4);
+        break;
+      case L4:
+        setPos(3.6);
+        break;
+      case BARGE:
+        setPos(1); //idk this
+        break;
+      case SCORING:
+        setPos(3.9);
+        break;
+    }
 
   }
 
