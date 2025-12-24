@@ -47,11 +47,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private boolean isCoralMode = true;
-    // private PivotSubsystem pivot = new PivotSubsystem();
-    // private ElevatorSubsystem elevSub = new ElevatorSubsystem();
-    // private WristSubsystem wrist = new WristSubsystem();
-    // private RobotManager botManager = new RobotManager();
-    private ClawSubsystem claw = new ClawSubsystem();
+    private RobotManager botManager = new RobotManager();
 
     public RobotContainer() {
         configureBindings();
@@ -79,17 +75,11 @@ public class RobotContainer {
         Trigger isCoralMode = new Trigger(() -> this.isCoralMode);
         Trigger isAlgaeMode = isCoralMode.negate();
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> claw.setState("CORAL_INTAKE")));
+        joystick.leftTrigger().onTrue(new InstantCommand(() -> botManager.setState("CORAL_INTAKE")));
+        joystick.rightTrigger().onTrue(new InstantCommand(() -> botManager.setState("INTAKE_DOWN")));
+        joystick.rightTrigger().onFalse(new InstantCommand(() -> botManager.setState("CORAL_INTAKE_DONE")));
 
-        joystick.rightTrigger().onTrue(new InstantCommand(() -> claw.setState("NUETRAL")));
-
-        joystick.rightBumper().onTrue(new InstantCommand(() -> claw.setState("ALGAE_HOLDING")));
-        // joystick.a().onTrue(new InstantCommand(() -> pivot.setState("IDLE")));
-        // joystick.b().onTrue(new InstantCommand(() -> pivot.setState("CORAL_INTAKE")));
-        // joystick.y().onTrue(new InstantCommand(() -> pivot.setState("DOWN")));
-        // joystick.rightBumper().onTrue(new InstantCommand(() -> wrist.setState("VERTICAL")));
-     
-        // drivetrain.registerTelemetry(logger::telemeterize);
+        joystick.a().onTrue(new InstantCommand(() -> botManager.setState("IDLE")));
     }
 
     public Command getAutonomousCommand() {
