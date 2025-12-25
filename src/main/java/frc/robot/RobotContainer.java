@@ -6,28 +6,18 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.time.Instant;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.claw.ClawSubsystem;
-import frc.robot.subsystems.elevator.ElevatorSubsystem;
-import frc.robot.subsystems.pivot.PivotSubsystem;
-import frc.robot.subsystems.wrist.WristSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.util.RobotManager;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond)*0.5; // kSpeedAt12Volts desired top speed
@@ -75,12 +65,25 @@ public class RobotContainer {
         Trigger isCoralMode = new Trigger(() -> this.isCoralMode);
         Trigger isAlgaeMode = isCoralMode.negate();
 
-        joystick.leftTrigger().onTrue(new InstantCommand(() -> botManager.setState("CORAL_INTAKE")));
-        joystick.a().onTrue(new InstantCommand(() -> botManager.setState("L1")));
-        joystick.b().onTrue(new InstantCommand(() -> botManager.setState("L2")));
-        joystick.x().onTrue(new InstantCommand(() -> botManager.setState("L3")));
-        joystick.y().onTrue(new InstantCommand(() -> botManager.setState("L4")));
-        joystick.povDown().onTrue(new InstantCommand(() -> botManager.setState("IDLE")));
+        joystick.povUp().onTrue(new InstantCommand(() -> this.isCoralMode=true));
+        joystick.povLeft().onTrue(new InstantCommand(() -> this.isCoralMode=false));
+
+        joystick.leftTrigger().and(isAlgaeMode).onTrue(new InstantCommand(() -> botManager.leftTrigger()));
+
+        joystick.leftTrigger().and(isCoralMode).onTrue(new InstantCommand(() -> botManager.setState("CORAL_INTAKE", 0)));
+
+        joystick.rightStick().onTrue(new InstantCommand(() -> botManager.flip()));
+
+        joystick.a().and(isCoralMode).onTrue(new InstantCommand(() -> botManager.setState("L1", 0)));
+        joystick.b().and(isCoralMode).onTrue(new InstantCommand(() -> botManager.b()));
+        joystick.x().and(isCoralMode).onTrue(new InstantCommand(() -> botManager.x()));
+        joystick.y().and(isCoralMode).onTrue(new InstantCommand(() -> botManager.y()));
+
+        joystick.a().and(isAlgaeMode).onTrue(new InstantCommand(() -> botManager.a()));
+        joystick.b().and(isAlgaeMode).onTrue(new InstantCommand(() -> botManager.setState("ALGAE_L2", 0)));
+        joystick.x().and(isAlgaeMode).onTrue(new InstantCommand(() -> botManager.setState("ALGAE_L3", 0)));
+
+        joystick.povDown().onTrue(new InstantCommand(() -> botManager.setState("IDLE", 0)));
 
         joystick.rightTrigger().onTrue(new InstantCommand(() -> botManager.rightTrigger()))
             .onFalse(new InstantCommand(() -> botManager.rightTriggerFalse()));

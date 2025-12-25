@@ -9,6 +9,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import dev.doglog.DogLog;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
@@ -84,14 +85,21 @@ public class PivotSubsystem extends SubsystemBase {
   }
 
   public void setState(String state){
-        pState = PivotState.valueOf(state);
-        setPos();
+    pState = PivotState.valueOf(state);
+    setPos();
     }
 
-  public String getState(){
-    return pState.name();
-}
+  public PivotState getState(){
+    return pState;
+  }
 
+  public boolean atGoal(){
+    return MathUtil.isNear(pState.getPosition(), pivotMotor.getPosition().getValueAsDouble(), 0.2);
+    }
+  
+  public boolean pastElevator(){
+    return MathUtil.isNear(2.9, pivotMotor.getPosition().getValueAsDouble(), .2);
+  }
   public void periodic() {
     SmartDashboard.putNumber("Pivot encoder", getEncoderPosition());
     DogLog.log("pivot velocity", pivotMotor.getVelocity().getValueAsDouble());

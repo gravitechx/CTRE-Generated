@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.util;
 
 import frc.robot.subsystems.claw.ClawState;
 import frc.robot.subsystems.elevator.ElevatorState;
@@ -8,6 +8,7 @@ import frc.robot.subsystems.wrist.WristState;
 public enum RobotState {
     STARTING(ElevatorState.BOTTOM, PivotState.BACK, WristState.HORIZANTAL, ClawState.NUETRAL),
     IDLE(ElevatorState.BOTTOM, PivotState.IDLE, WristState.HORIZANTAL, ClawState.NUETRAL),
+    IDLE_FLIPPED(ElevatorState.BOTTOM, PivotState.IDLE, WristState.FLIPPED, ClawState.NUETRAL),
 
     CORAL_INTAKE(ElevatorState.INTAKE, PivotState.CORAL_INTAKE, WristState.VERTICAL, ClawState.CORAL_INTAKE),
     INTAKE_DOWN(ElevatorState.INTAKE, PivotState.DOWN, WristState.VERTICAL, ClawState.CORAL_INTAKE),
@@ -35,7 +36,7 @@ public enum RobotState {
     L3_SCORING_FLIPPED(ElevatorState.L3, PivotState.SCORING, WristState.FLIPPED, ClawState.NUETRAL),
 
     L2L3_DONE(ElevatorState.BOTTOM, PivotState.SCORING, WristState.HORIZANTAL, ClawState.NUETRAL),
-    L2L3_FLIPPED(ElevatorState.BOTTOM, PivotState.SCORING, WristState.FLIPPED, ClawState.NUETRAL),
+    L2L3_DONE_FLIPPED(ElevatorState.BOTTOM, PivotState.SCORING, WristState.FLIPPED, ClawState.NUETRAL),
 
 
     L4(ElevatorState.L4, PivotState.L4, WristState.HORIZANTAL, ClawState.NUETRAL),
@@ -80,6 +81,19 @@ public enum RobotState {
     }
     public String getCState(){
         return this.cDefault.name();
+    }
+
+    public ElevatorState getElevatorState(){
+        return eDefault;
+    }
+    public PivotState getPivotState(){
+        return pDefault;
+    }
+    public WristState getWristState(){
+        return wDefault;
+    }
+    public ClawState getClawState(){
+        return cDefault;
     }
 
 }
