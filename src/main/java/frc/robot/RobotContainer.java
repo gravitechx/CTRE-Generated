@@ -76,10 +76,15 @@ public class RobotContainer {
         Trigger isAlgaeMode = isCoralMode.negate();
 
         joystick.leftTrigger().onTrue(new InstantCommand(() -> botManager.setState("CORAL_INTAKE")));
-        joystick.rightTrigger().onTrue(new InstantCommand(() -> botManager.setState("INTAKE_DOWN")));
-        joystick.rightTrigger().onFalse(new InstantCommand(() -> botManager.setState("CORAL_INTAKE_DONE")));
+        joystick.a().onTrue(new InstantCommand(() -> botManager.setState("L1")));
+        joystick.b().onTrue(new InstantCommand(() -> botManager.setState("L2")));
+        joystick.x().onTrue(new InstantCommand(() -> botManager.setState("L3")));
+        joystick.y().onTrue(new InstantCommand(() -> botManager.setState("L4")));
+        joystick.povDown().onTrue(new InstantCommand(() -> botManager.setState("IDLE")));
 
-        joystick.a().onTrue(new InstantCommand(() -> botManager.setState("IDLE")));
+        joystick.rightTrigger().onTrue(new InstantCommand(() -> botManager.rightTrigger()))
+            .onFalse(new InstantCommand(() -> botManager.rightTriggerFalse()));
+
     }
 
     public Command getAutonomousCommand() {

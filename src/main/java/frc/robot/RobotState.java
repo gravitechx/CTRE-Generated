@@ -25,16 +25,23 @@ public enum RobotState {
     L1_DONE(ElevatorState.L1, PivotState.L1, WristState.VERTICAL, ClawState.NUETRAL),
 
     L2(ElevatorState.L2, PivotState.L2L3, WristState.HORIZANTAL, ClawState.NUETRAL),
+    L2_FLIPPED(ElevatorState.L2, PivotState.L2L3, WristState.FLIPPED, ClawState.NUETRAL),
     L2_SCORING(ElevatorState.L2, PivotState.SCORING, WristState.HORIZANTAL, ClawState.NUETRAL),
+    L2_SCORING_FLIPPED(ElevatorState.L2, PivotState.SCORING, WristState.FLIPPED, ClawState.NUETRAL),
 
     L3(ElevatorState.L3, PivotState.L2L3, WristState.HORIZANTAL, ClawState.NUETRAL),
+    L3_FLIPPED(ElevatorState.L3, PivotState.L2L3, WristState.FLIPPED, ClawState.NUETRAL),
     L3_SCORING(ElevatorState.L3, PivotState.SCORING, WristState.HORIZANTAL, ClawState.NUETRAL),
+    L3_SCORING_FLIPPED(ElevatorState.L3, PivotState.SCORING, WristState.FLIPPED, ClawState.NUETRAL),
 
     L2L3_DONE(ElevatorState.BOTTOM, PivotState.SCORING, WristState.HORIZANTAL, ClawState.NUETRAL),
+    L2L3_FLIPPED(ElevatorState.BOTTOM, PivotState.SCORING, WristState.FLIPPED, ClawState.NUETRAL),
 
 
     L4(ElevatorState.L4, PivotState.L4, WristState.HORIZANTAL, ClawState.NUETRAL),
+    L4_FLIPPED(ElevatorState.L4, PivotState.L4, WristState.FLIPPED, ClawState.NUETRAL),
     L4_SCORING(ElevatorState.BOTTOM, PivotState.L4, WristState.HORIZANTAL, ClawState.NUETRAL),
+    L4_SCORING_FLIPPED(ElevatorState.BOTTOM, PivotState.L4, WristState.FLIPPED, ClawState.NUETRAL),
 
     ALGAE_L2(ElevatorState.L2ALGAE, PivotState.L2L3, WristState.HORIZANTAL, ClawState.NUETRAL),
     ALGAE_L2_INTAKING(ElevatorState.L2ALGAE, PivotState.L2L3, WristState.HORIZANTAL, ClawState.ALGAE_INTAKE),
