@@ -52,7 +52,6 @@ public enum RobotState {
     ALGAE_L3_INTAKING(ElevatorState.L3ALGAE, PivotState.L2L3, WristState.HORIZANTAL, ClawState.ALGAE_INTAKE),
     ALGAE_L3_DONE(ElevatorState.L3ALGAE, PivotState.L2L3, WristState.HORIZANTAL, ClawState.ALGAE_HOLDING),
 
-    ALGAE_HOLDING(ElevatorState.BOTTOM, PivotState.BACK, WristState.HORIZANTAL, ClawState.NUETRAL),
     CORAL_OUTTAKE(ElevatorState.BOTTOM, PivotState.BACK, WristState.HORIZANTAL, ClawState.NUETRAL),
     ALGAE_OUTTAKE(ElevatorState.BOTTOM, PivotState.BACK, WristState.HORIZANTAL, ClawState.NUETRAL),
     WRIST_FLIPPED(ElevatorState.BOTTOM, PivotState.BACK, WristState.HORIZANTAL, ClawState.NUETRAL);

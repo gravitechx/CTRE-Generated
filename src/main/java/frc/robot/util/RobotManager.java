@@ -63,19 +63,19 @@ public class RobotManager extends SubsystemBase{
                 setState("L1_SCORING", 0);
                 break;
             case L2:
-                setState("L2_SCORING", 0);
+                setState("L2_SCORING", 0.2);
                 setState("L2L3_DONE", .2);
                 break;
             case L2_FLIPPED:
-                setState("L2_SCORING_FLIPPED", 0);
+                setState("L2_SCORING_FLIPPED", 0.2);
                 setState("L2L3_DONE_FLIPPED", .2);
                 break;
             case L3:
-                setState("L2_SCORING", 0);
+                setState("L2_SCORING", .2);
                 setState("L2L3_DONE", .2);
                 break;
             case L3_FLIPPED:
-                setState("L3_SCORING_FLIPPED", 0);
+                setState("L3_SCORING_FLIPPED", 0.2);
                 setState("L2L3_DONE_FLIPPED", .2);
                 break;
             case L4:
@@ -118,7 +118,19 @@ public class RobotManager extends SubsystemBase{
             case ALGAE_L3:
                 setState("ALGAE_L3_INTAKING", 0);
                 break;
-            default: setState("CORAL_INTAKE", 0);
+            default: setState("ALGAE_INTAKE", 0);
+        }
+    }
+
+    public void leftTriggerFalse(){
+        switch(botState){
+            case ALGAE_L2_INTAKING:
+                setState("ALGAE_L2_DONE", 0);
+                break;
+            case ALGAE_L3_INTAKING:
+                setState("ALGAE_L3_DONE", 0);
+                break;
+            default: setState("ALGAE_INTAKE_DONE", 0);
         }
     }
 
@@ -140,11 +152,12 @@ public class RobotManager extends SubsystemBase{
     public void a(){
         switch(botState){
             case ALGAE_L2_DONE:
-                setState("ALGAE_HOLDING", 0);
+                setState("ALGAE_INTAKE_DONE", 0);
                 break;
-            case ALGAE_HOLDING:
-                setState("PROCESSOR", 0);
-            default: setState(botState.name(), 0);
+            case ALGAE_L3_DONE:
+                setState("ALGAE_INTAKE_DONE", 0);
+                break;
+            default: setState("PROCESSOR", 0);
         }
     }
 

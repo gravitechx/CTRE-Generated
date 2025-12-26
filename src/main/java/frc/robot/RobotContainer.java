@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -67,12 +68,22 @@ public class RobotContainer {
 
         joystick.povUp().onTrue(new InstantCommand(() -> this.isCoralMode=true));
         joystick.povLeft().onTrue(new InstantCommand(() -> this.isCoralMode=false));
+        
+        isCoralMode.onTrue(new InstantCommand(() -> DogLog.log("coral mode", this.isCoralMode)));
+
+        isAlgaeMode.onFalse(new InstantCommand(() -> DogLog.log("algae mode", !this.isCoralMode)));
+
 
         joystick.leftTrigger().and(isAlgaeMode).onTrue(new InstantCommand(() -> botManager.leftTrigger()));
+        joystick.leftTrigger().and(isAlgaeMode).onFalse(new InstantCommand(() -> botManager.leftTriggerFalse()));
+
 
         joystick.leftTrigger().and(isCoralMode).onTrue(new InstantCommand(() -> botManager.setState("CORAL_INTAKE", 0)));
 
-        joystick.rightStick().onTrue(new InstantCommand(() -> botManager.flip()));
+        joystick.leftStick().onTrue(new InstantCommand(() -> botManager.flip()));
+
+        joystick.rightStick().onTrue(new InstantCommand(() -> botManager.setCState("CORAL_OUTTAKE")));
+        joystick.rightStick().onFalse(new InstantCommand(() -> botManager.setCState(botManager.getState().getCState())));
 
         joystick.a().and(isCoralMode).onTrue(new InstantCommand(() -> botManager.setState("L1", 0)));
         joystick.b().and(isCoralMode).onTrue(new InstantCommand(() -> botManager.b()));
