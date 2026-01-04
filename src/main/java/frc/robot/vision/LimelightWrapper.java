@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,11 +9,9 @@ import static frc.robot.Constants.LimelightConstants.*;
 
 public class LimelightWrapper {
     private String limelightName;
-    private String limelightName2;
     private final LimelightHelpers.PoseEstimate limelightPoseEstimate = new LimelightHelpers.PoseEstimate();
-    public LimelightWrapper(String limelightName, String limelightName2){
+    public LimelightWrapper(String limelightName){
         this.limelightName = limelightName;
-        this.limelightName2 = limelightName2;
         LimelightHelpers.setCameraPose_RobotSpace(
             limelightName, 
             translationToRobot.getX(), 
@@ -22,15 +20,6 @@ public class LimelightWrapper {
             rotationOffset.getX(), 
             rotationOffset.getY(), 
             rotationOffset.getZ()
-        );
-        LimelightHelpers.setCameraPose_RobotSpace(
-            limelightName2, 
-            translationToRobot2.getX(), 
-            translationToRobot2.getY(), 
-            translationToRobot2.getZ(), 
-            rotationOffset2.getX(), 
-            rotationOffset2.getY(), 
-            rotationOffset2.getZ()
         );
         Pose3d limelightPositionOffset = LimelightHelpers.getCameraPose3d_RobotSpace(limelightName);
         SmartDashboard.putNumber("limelight pos X offset", limelightPositionOffset.getX());
@@ -63,14 +52,6 @@ public class LimelightWrapper {
         return limelightPoseEstimate;
     }
 
-    public LimelightHelpers.PoseEstimate getBotPoseEstimate2(){
-        LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName2);
-        if(LimelightHelpers.getFiducialID(limelightName2)>0){
-            return mt1;
-        }
-        return limelightPoseEstimate;
-    }
-
     public Transform2d getTransformToBranch(boolean isLeft){
         //sets 3d offset based on branch we're trying to align to then grabs nearest tag
         double xValue = tagToBranchOffset.getX();
@@ -94,5 +75,13 @@ public class LimelightWrapper {
         LimelightHelpers.SetRobotOrientation(limelightName, newAngle, 0, 0, 0, 0, 0);
         LimelightHelpers.SetIMUMode(limelightName, 1);
         LimelightHelpers.SetIMUMode(limelightName, 0);
+    }
+
+    public void setPipeline(int newPipeline){
+        LimelightHelpers.setPipelineIndex(limelightName, newPipeline);
+    }
+
+    public LimelightHelpers.RawDetection[] getDetections(){
+        return LimelightHelpers.getRawDetections(limelightName);
     }
 }
