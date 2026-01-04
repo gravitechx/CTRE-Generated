@@ -2,7 +2,10 @@ package frc.robot.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import static frc.robot.Constants.LimelightConstants.*;
@@ -14,18 +17,38 @@ public class LimelightWrapper {
         this.limelightName = limelightName;
         LimelightHelpers.setCameraPose_RobotSpace(
             limelightName, 
-            translationToRobot.getX(), 
-            translationToRobot.getY(), 
-            translationToRobot.getZ(), 
-            rotationOffset.getX(), 
-            rotationOffset.getY(), 
-            rotationOffset.getZ()
+            getTranslationToBot().getX(), 
+            getTranslationToBot().getY(), 
+            getTranslationToBot().getZ(), 
+            getRotationOffset().getX(), 
+            getRotationOffset().getY(), 
+            getRotationOffset().getZ()
         );
         Pose3d limelightPositionOffset = LimelightHelpers.getCameraPose3d_RobotSpace(limelightName);
         SmartDashboard.putNumber("limelight pos X offset", limelightPositionOffset.getX());
         SmartDashboard.putNumber("limelight pos Y offset", limelightPositionOffset.getY());
         SmartDashboard.putNumber("limelight pos Z offset", limelightPositionOffset.getZ());
         SmartDashboard.putNumber("limelight pos angle offset", limelightPositionOffset.getRotation().getX());
+    }
+
+    public Translation3d getTranslationToBot(){
+        if(limelightName.equals("limelight-front")){
+            return translationToRobot;
+        } else if(limelightName.equals("limelight-back")){
+            return translationToRobot2;
+        } else if(limelightName.equals("limelight-object")){
+            return translationToRobot3;
+        } else{return translationToRobot;}
+    }
+
+    public Rotation3d getRotationOffset(){
+        if(limelightName.equals("limelight-front")){
+            return rotationOffset;
+        } else if(limelightName.equals("limelight-back")){
+            return rotationOffset2;
+        } else if(limelightName.equals("limelight-object")){
+            return rotationOffset3;
+        } else{return rotationOffset;}
     }
 
     public Transform2d getNearestTagWith3DOffset(){

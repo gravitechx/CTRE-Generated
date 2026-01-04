@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
@@ -20,10 +21,12 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.vision.LimelightStructure;
 import frc.robot.vision.LimelightWrapper;
 
 /**
@@ -36,7 +39,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
     private Boolean doRejectUpdate = false;
     private Boolean doRejectUpdate2 = false;
-    private LimelightWrapper limelight = new LimelightWrapper("limelight-one");
+    private LimelightStructure limelight = new LimelightStructure("limelight-front", "limelight-back");
+    private SwerveDrivePoseEstimator limelightPose;
 
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
@@ -241,32 +245,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             });
         }
 
-        doRejectUpdate = false;
-        if(limelight.getBotPoseEstimate().rawFiducials.length > 0)
-        {
-            if(limelight.getBotPoseEstimate().tagCount == 1 && limelight.getBotPoseEstimate().rawFiducials.length == 1)
-            {
-                if(limelight.getBotPoseEstimate().rawFiducials[0].ambiguity > .7)
-                {
-                doRejectUpdate = true;
-                }
-                if(limelight.getBotPoseEstimate().rawFiducials[0].distToCamera > 3)
-                {
-                doRejectUpdate = true;
-                }
-            }
-            if(limelight.getBotPoseEstimate().tagCount == 0)
-            {
-                doRejectUpdate = true;
-            }
+        limelightPose = limelight.generatePoseEstimate();
 
-            if(!doRejectUpdate)
-            {
-                setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
-                addVisionMeasurement(
-                    limelight.getBotPoseEstimate().pose,
-                    limelight.getBotPoseEstimate().timestampSeconds);
-            }
+        if(limelightPose!=null){
+            setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
+            addVisionMeasurement(
+                limelightPose.getEstimatedPosition(),
+                Timer.getFPGATimestamp());
         }
     }
 
