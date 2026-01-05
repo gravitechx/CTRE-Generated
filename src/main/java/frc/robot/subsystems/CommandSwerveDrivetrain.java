@@ -30,7 +30,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.vision.VisionSubsystem;
-import frc.robot.vision.LimelightWrapper;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -40,8 +39,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
-    private Boolean doRejectUpdate = false;
-    private Boolean doRejectUpdate2 = false;
     private VisionSubsystem limelight = new VisionSubsystem("limelight-one", "limelight-greg");
     private SwerveDrivePoseEstimator limelightPose;
     private Field2d field = new Field2d();

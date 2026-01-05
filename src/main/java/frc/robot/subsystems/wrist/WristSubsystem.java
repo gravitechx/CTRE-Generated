@@ -12,8 +12,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.elevator.ElevatorState;
-
 
 public class WristSubsystem extends SubsystemBase{
     private final SparkMax motor;
