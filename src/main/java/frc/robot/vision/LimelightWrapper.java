@@ -32,9 +32,9 @@ public class LimelightWrapper {
     }
 
     public Translation3d getTranslationToBot(){
-        if(limelightName.equals("limelight-front")){
+        if(limelightName.equals("limelight-one")){
             return translationToRobot;
-        } else if(limelightName.equals("limelight-back")){
+        } else if(limelightName.equals("limelight-greg")){
             return translationToRobot2;
         } else if(limelightName.equals("limelight-object")){
             return translationToRobot3;
@@ -106,5 +106,9 @@ public class LimelightWrapper {
 
     public LimelightHelpers.RawDetection[] getDetections(){
         return LimelightHelpers.getRawDetections(limelightName);
+    }
+
+    public void setLights(){
+        LimelightHelpers.setLEDMode_ForceOn(limelightName);
     }
 }

@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -19,6 +20,8 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
@@ -26,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import frc.robot.vision.LimelightStructure;
+import frc.robot.vision.VisionSubsystem;
 import frc.robot.vision.LimelightWrapper;
 
 /**
@@ -39,9 +42,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
     private Boolean doRejectUpdate = false;
     private Boolean doRejectUpdate2 = false;
-    private LimelightStructure limelight = new LimelightStructure("limelight-front", "limelight-back");
+    private VisionSubsystem limelight = new VisionSubsystem("limelight-one", "limelight-greg");
     private SwerveDrivePoseEstimator limelightPose;
-
+    private Field2d field = new Field2d();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -245,7 +248,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             });
         }
 
-        limelightPose = limelight.generatePoseEstimate();
+        limelightPose = limelight.getLLPose();
 
         if(limelightPose!=null){
             setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
@@ -253,6 +256,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 limelightPose.getEstimatedPosition(),
                 Timer.getFPGATimestamp());
         }
+
+        field.setRobotPose(getState().Pose);
+        SmartDashboard.putData("bot pos", field);
+
     }
 
     private void startSimThread() {
